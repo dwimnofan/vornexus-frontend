@@ -7,7 +7,6 @@ import { FileText, Home, LogOut, Settings, Briefcase, User, Menu, X, Award } fro
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
-
 export function Sidebar({ className }) {
     const pathname = usePathname();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -36,18 +35,6 @@ export function Sidebar({ className }) {
             icon: User,
             href: "/dashboard/profile",
             active: pathname === "/dashboard/profile",
-        },
-        {
-            label: "Achievements",
-            icon: Award,
-            href: "/dashboard/achievements",
-            active: pathname === "/dashboard/achievements",
-        },
-        {
-            label: "Settings",
-            icon: Settings,
-            href: "/dashboard/settings",
-            active: pathname === "/dashboard/settings",
         },
     ];
 
