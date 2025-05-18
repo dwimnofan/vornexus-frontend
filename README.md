@@ -6,6 +6,8 @@
   - [http://localhost:3000/dashboard](http://localhost:3000/dashboard)
 - [x] Show Job Recommendations Page
   - [http://localhost:3000/dashboard/matches](http://localhost:3000/dashboard/matches)
+- [x] Detail Job Page with chat bot
+  - [http://localhost:3000/dashboard/matches/[id]](http://localhost:3000/dashboard/matches/[id])
 - [x] Upload CV Page
   - [http://localhost:3000/dashboard/upload](http://localhost:3000/dashboard/upload)
 - [x] Chat bot section
