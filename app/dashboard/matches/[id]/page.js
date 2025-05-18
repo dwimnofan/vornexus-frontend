@@ -28,6 +28,7 @@ import { StaggeredAppear } from "@/components/staggered-appear"
 import { SkillMatch } from "@/components/skill-match"
 import { JobCard } from "@/components/job-card"
 import { ChatBot } from "@/components/chat/chat-bot"
+import Image from "next/image"
 
 // mock data job details
 const jobsData = {
@@ -493,7 +494,7 @@ export default function JobDetailPage(props) {
     return (
       <div className="text-center py-12">
         <h2 className="text-2xl font-bold">Job not found</h2>
-        <p className="text-muted-foreground mt-2">The job you're looking for doesn't exist or has been removed.</p>
+        <p className="text-muted-foreground mt-2">The job you are looking for does not exist or has been removed.</p>
         <Button asChild className="mt-4">
           <Link href="/dashboard/matches">Back to job matches</Link>
         </Button>
@@ -549,10 +550,12 @@ export default function JobDetailPage(props) {
                 <CardContent className="p-6">
                   <div className="flex flex-col md:flex-row md:items-start gap-4">
                     <div className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-muted flex items-center justify-center">
-                      <img
+                      <Image
                         src={job.logo || "/placeholder.svg"}
                         alt={job.company}
                         className="w-full h-full object-cover"
+                        width={80}
+                        height={80}
                       />
                     </div>
                     <div className="flex-1">
@@ -627,10 +630,12 @@ export default function JobDetailPage(props) {
                   <h2 className="text-lg font-semibold mb-4">About {job.company}</h2>
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-12 h-12 rounded-md overflow-hidden bg-muted flex items-center justify-center">
-                      <img
+                      <Image
                         src={job.logo || "/placeholder.svg"}
                         alt={job.company}
                         className="w-full h-full object-cover"
+                        width={48}
+                        height={48}
                       />
                     </div>
                     <div>
