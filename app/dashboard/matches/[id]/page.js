@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import {
@@ -436,7 +436,8 @@ const similarJobs = [
   },
 ]
 
-export default function JobDetailPage({ params }) {
+export default function JobDetailPage(props) {
+  const params = use(props.params);
   const router = useRouter()
   const [job, setJob] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
