@@ -1,3 +1,5 @@
+"use client"
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { JobCard } from "@/components/job-card";
 import { FileUp, Briefcase, BarChart } from "lucide-react";
@@ -5,6 +7,12 @@ import Link from "next/link";
 import { RevealOnScroll } from "@/components/reveal-on-scroll";
 import { StaggeredAppear } from "@/components/staggered-appear";
 import { AnimatedButton } from "@/components/animated-button";
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { isAuthenticated, logoutUser, getUserInfo } from "@/lib/auth"
+import { useToast } from "@/hooks/use-toast"
 
 // Sample job data
 const recentJobs = [
@@ -136,4 +144,92 @@ export default function Dashboard() {
             </RevealOnScroll>
         </div>
     );
+}
+
+export default function Dashboard() {
+  const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState(null)
+  const router = useRouter()
+  const { toast } = useToast()
+
+  useEffect(() => {
+    // Check if user is authenticated
+    if (!isAuthenticated()) {
+      router.push("/login")
+    } else {
+      // Get user info from localStorage
+      const userInfo = getUserInfo()
+      setUser(userInfo)
+      setLoading(false)
+    }
+  }, [router])
+
+  const handleLogout = () => {
+    logoutUser()
+    toast({
+      title: "Logged out",
+      description: "You have been logged out successfully",
+    })
+    router.push("/login")
+  }
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p>Loading...</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex min-h-screen flex-col p-8">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">Dashboard</h1>
+        <Button variant="outline" onClick={handleLogout}>
+          Logout
+        </Button>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <Card>
+          <CardHeader>
+            <CardTitle>Welcome to Your Dashboard</CardTitle>
+            <CardDescription>{user ? `Hello, ${user.username}!` : "You are now logged in"}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p>This is a protected page that only authenticated users can access.</p>
+          </CardContent>
+        </Card>
+
+        {/* Add more dashboard content here */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Your Activity</CardTitle>
+            <CardDescription>Recent actions and statistics</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p>No recent activity to display.</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Quick Actions</CardTitle>
+            <CardDescription>Common tasks and shortcuts</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <Button className="w-full" variant="outline">
+              Create New Note
+            </Button>
+            <Button className="w-full" variant="outline">
+              View Profile
+            </Button>
+            <Button className="w-full" variant="outline">
+              Account Settings
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
 }
