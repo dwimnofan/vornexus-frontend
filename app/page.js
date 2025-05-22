@@ -1,103 +1,130 @@
+import Link from "next/link";
+import { Navbar } from "@/components/navbar";
+import { Footer } from "@/components/footer";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, FileUp, Search, Zap } from "lucide-react";
+import { AnimatedGradientBackground } from "@/components/animated-gradient-background";
+import { RevealOnScroll } from "@/components/reveal-on-scroll";
+import { StaggeredAppear } from "@/components/staggered-appear";
+import { AnimatedButton } from "@/components/animated-button";
 import Image from "next/image";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    return (
+        <div className="flex min-h-screen flex-col">
+            <Navbar />
+            <main className="flex-1">
+                {/* Hero Section */}
+                <AnimatedGradientBackground className="py-12 md:py-24 lg:py-32 bg-background">
+                    <div className="container max-w-[1600px] px-4 md:px-6 mx-auto">
+                        <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 items-center mx-auto max-w-[1200px]">
+                            <StaggeredAppear className="flex flex-col justify-center space-y-4">
+                                <div className="space-y-2">
+                                    <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
+                                        Find the Job That <span className="bg-gradient-to-r from-primary-indigo to-accent-emerald bg-clip-text text-transparent">Fits Your CV</span>
+                                    </h1>
+                                    <p className="max-w-[600px] text-muted-foreground md:text-xl">Let AI analyze your resume and match you to the best-fit jobs. No more endless searching.</p>
+                                </div>
+                                <div className="flex flex-col gap-2 min-[400px]:flex-row">
+                                    <Link href="/register">
+                                        <AnimatedButton size="lg" className="gap-1.5">
+                                            Get Started <ArrowRight className="h-4 w-4" />
+                                        </AnimatedButton>
+                                    </Link>
+                                    <Link href="/how-it-works">
+                                        <Button size="lg" variant="outline">
+                                            Learn More
+                                        </Button>
+                                    </Link>
+                                </div>
+                            </StaggeredAppear>
+                            {/* <div className="mx-auto lg:mx-0 relative">
+                                <RevealOnScroll direction="left">
+                                    <div className="absolute inset-0 bg-gradient-radial from-primary/20 to-transparent blur-2xl opacity-70 animate-pulse" />
+                                    <Image
+                                        src="/placeholder.svg?height=550&width=550"
+                                        alt="CariFit AI Job Matching"
+                                        className="relative mx-auto aspect-square overflow-hidden rounded-xl object-cover object-center sm:w-full lg:order-last"
+                                        width={550}
+                                        height={550}
+                                    />
+                                </RevealOnScroll>
+                            </div> */}
+                        </div>
+                    </div>
+                </AnimatedGradientBackground>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+                {/* How It Works Section */}
+                <section className="py-12 md:py-24 lg:py-32 bg-muted/50">
+                    <div className="container max-w-[1600px] px-4 md:px-6 mx-auto">
+                        <RevealOnScroll>
+                            <div className="flex flex-col items-center justify-center space-y-4 text-center">
+                                <div className="space-y-2">
+                                    <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">How CariFit Works</h2>
+                                    <p className="max-w-[700px] text-muted-foreground md:text-xl">Three simple steps to find your perfect job match</p>
+                                </div>
+                            </div>
+                        </RevealOnScroll>
+                        <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-3 md:gap-12 pt-12">
+                            <RevealOnScroll delay={100}>
+                                <div className="flex flex-col items-center space-y-4 text-center group">
+                                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 transition-all duration-300 group-hover:scale-110 group-hover:bg-primary/20">
+                                        <FileUp className="h-8 w-8 text-primary transition-transform duration-300 group-hover:scale-110" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <h3 className="text-xl font-bold">Upload Your CV</h3>
+                                        <p className="text-muted-foreground">Simply drag and drop your resume or CV in any format. Our AI will do the rest.</p>
+                                    </div>
+                                </div>
+                            </RevealOnScroll>
+                            <RevealOnScroll delay={300}>
+                                <div className="flex flex-col items-center space-y-4 text-center group">
+                                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 transition-all duration-300 group-hover:scale-110 group-hover:bg-primary/20">
+                                        <Zap className="h-8 w-8 text-primary transition-transform duration-300 group-hover:scale-110" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <h3 className="text-xl font-bold">AI Analyzes Your Skills</h3>
+                                        <p className="text-muted-foreground">Our AI extracts your skills, experience, and qualifications to create your profile.</p>
+                                    </div>
+                                </div>
+                            </RevealOnScroll>
+                            <RevealOnScroll delay={500}>
+                                <div className="flex flex-col items-center space-y-4 text-center group">
+                                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 transition-all duration-300 group-hover:scale-110 group-hover:bg-primary/20">
+                                        <Search className="h-8 w-8 text-primary transition-transform duration-300 group-hover:scale-110" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <h3 className="text-xl font-bold">Get Matched to Jobs</h3>
+                                        <p className="text-muted-foreground">Receive personalized job recommendations based on your skills and experience.</p>
+                                    </div>
+                                </div>
+                            </RevealOnScroll>
+                        </div>
+                    </div>
+                </section>
+
+                {/* CTA Section */}
+                <section className="py-12 md:py-24 lg:py-32 bg-background border-t">
+                    <div className="container max-w-[1600px] px-4 md:px-6 mx-auto">
+                        <RevealOnScroll>
+                            <div className="flex flex-col items-center justify-center space-y-4 text-center">
+                                <div className="space-y-2">
+                                    <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">Ready to Find Your Perfect Job Match?</h2>
+                                    <p className="max-w-[700px] text-muted-foreground md:text-xl">Join thousands of job seekers who have found their dream jobs with CariFit.</p>
+                                </div>
+                                <div className="flex flex-col gap-2 min-[400px]:flex-row">
+                                    <Link href="/register">
+                                        <AnimatedButton size="lg" className="gap-1.5">
+                                            Get Started <ArrowRight className="h-4 w-4" />
+                                        </AnimatedButton>
+                                    </Link>
+                                </div>
+                            </div>
+                        </RevealOnScroll>
+                    </div>
+                </section>
+            </main>
+            <Footer />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+    );
 }
