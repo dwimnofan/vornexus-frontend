@@ -125,13 +125,20 @@ export default function Dashboard() {
                             </AnimatedButton>
                         </Link>
                     </div>
-                    <StaggeredAppear className="grid gap-6 md:grid-cols-2 lg:grid-cols-3" staggerAmount={150}>
-                        {recentJobs.map((job) => (
-                            <div key={job.id}>
-                                <JobCard job={job} />
-                            </div>
-                        ))}
-                    </StaggeredAppear>
+                    {recentJobs.length === 0 ? (
+                        <div className="text-center items-center justify-center">
+                            <h3 className="text-lg font-medium mb-2">No matching jobs found</h3>
+                            <p className="text-muted-foreground mb-4">Try adjusting your search or filters</p>
+                        </div>
+                    ) : (
+                        <StaggeredAppear className="grid gap-6 md:grid-cols-2 lg:grid-cols-3" staggerAmount={150}>
+                            {recentJobs.map((job) => (
+                                <div key={job.id}>
+                                    <JobCard job={job} />
+                                </div>
+                            ))}
+                        </StaggeredAppear>
+                    )}
                 </div>
             </RevealOnScroll>
         </div>

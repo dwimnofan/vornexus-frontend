@@ -288,12 +288,7 @@ export default function MatchesPage() {
         >
           {filteredJobs.map((job) => (
             <div key={job.id}>
-              <Link
-                href={`/dashboard/matches/${job.id}`}
-                className="block h-full"
-              >
-                <JobCard job={job} />
-              </Link>
+              <JobCard job={job} />
             </div>
           ))}
         </StaggeredAppear>
