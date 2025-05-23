@@ -512,7 +512,7 @@ export default function JobDetailPage(props) {
               <ArrowLeft className="h-4 w-4" /> Back to matches
             </Link>
           </Button>
-          <div className="flex items-center gap-2">
+          {/* <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={handleShare} className="relative">
               <Share2 className="h-4 w-4 mr-1" /> Share
               {showShareOptions && (
@@ -540,7 +540,7 @@ export default function JobDetailPage(props) {
               <Bookmark className={`h-4 w-4 mr-1 ${isSaved ? "fill-primary" : ""}`} />
               {isSaved ? "Saved" : "Save"}
             </Button>
-          </div>
+          </div> */}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -549,7 +549,7 @@ export default function JobDetailPage(props) {
               <Card>
                 <CardContent className="p-6">
                   <div className="flex flex-col md:flex-row md:items-start gap-4">
-                    <div className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-muted flex items-center justify-center">
+                    {/* <div className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-muted flex items-center justify-center">
                       <Image
                         src={job.logo || "/placeholder.svg"}
                         alt={job.company}
@@ -557,7 +557,7 @@ export default function JobDetailPage(props) {
                         width={80}
                         height={80}
                       />
-                    </div>
+                    </div> */}
                     <div className="flex-1">
                       <h1 className="text-2xl font-bold">{job.title}</h1>
                       <div className="flex flex-wrap items-center gap-2 mt-1 text-muted-foreground">
@@ -629,7 +629,7 @@ export default function JobDetailPage(props) {
                 <CardContent className="p-6">
                   <h2 className="text-lg font-semibold mb-4">About {job.company}</h2>
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 rounded-md overflow-hidden bg-muted flex items-center justify-center">
+                    {/* <div className="w-12 h-12 rounded-md overflow-hidden bg-muted flex items-center justify-center">
                       <Image
                         src={job.logo || "/placeholder.svg"}
                         alt={job.company}
@@ -637,17 +637,17 @@ export default function JobDetailPage(props) {
                         width={48}
                         height={48}
                       />
-                    </div>
+                    </div> */}
                     <div>
                       <h3 className="font-medium">{job.company}</h3>
-                      <a
+                      {/* <a
                         href={job.companyWebsite}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-sm text-primary hover:underline flex items-center"
                       >
                         Visit website <ExternalLink className="ml-1 h-3 w-3" />
-                      </a>
+                      </a> */}
                     </div>
                   </div>
                   <p className="text-sm text-muted-foreground mb-4">{job.companyDescription}</p>

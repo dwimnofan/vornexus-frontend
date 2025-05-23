@@ -30,12 +30,12 @@ export function Sidebar({ className }) {
             href: "/dashboard/matches",
             active: pathname === "/dashboard/matches",
         },
-        {
-            label: "Profile",
-            icon: User,
-            href: "/dashboard/profile",
-            active: pathname === "/dashboard/profile",
-        },
+        // {
+        //     label: "Profile",
+        //     icon: User,
+        //     href: "/dashboard/profile",
+        //     active: pathname === "/dashboard/profile",
+        // },
     ];
 
     return (

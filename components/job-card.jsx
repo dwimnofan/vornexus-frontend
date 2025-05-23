@@ -7,6 +7,7 @@ import { ExternalLink, ChevronDown, ChevronUp } from "lucide-react";
 import { MatchPercentage } from "@/components/match-percentage";
 import { cn } from "@/lib/utils";
 import { AnimatedButton } from "@/components/animated-button";
+import Link from "next/link";
 
 export function JobCard({ job }) {
     const [isExpanded, setIsExpanded] = useState(false);
@@ -77,9 +78,11 @@ export function JobCard({ job }) {
             </CardContent>
             <CardFooter className="flex items-center justify-between p-6 pt-0 border-t mt-auto">
                 <p className="text-sm text-muted-foreground">Posted {job.postedDate}</p>
-                <AnimatedButton size="sm" className="gap-1.5" onClick={(e) => e.preventDefault()}>
-                    View Job <ExternalLink className="h-3.5 w-3.5" />
-                </AnimatedButton>
+                <Link href={`/dashboard/matches/${job.id}`} className="block h-full">
+                    <AnimatedButton size="sm" className="gap-1.5  cursor-pointer">
+                        View Job <ExternalLink className="h-3.5 w-3.5" />
+                    </AnimatedButton>
+                </Link>
             </CardFooter>
         </Card>
     );
