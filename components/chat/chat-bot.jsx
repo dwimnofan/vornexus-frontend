@@ -61,37 +61,37 @@ export function ChatBot({ jobTitle, jobDescription, companyName, initialSuggeste
     }, [isOpen, messages.length, jobTitle, companyName]);
 
     const handleSendMessage = async (content) => {
-        if (!content.trim()) return;
+        // if (!content.trim()) return;
 
-        // Add user message
-        const userMessage = {
-            id: Date.now().toString(),
-            content,
-            role: "user",
-            timestamp: new Date(),
-        };
+        // // Add user message
+        // const userMessage = {
+        //     id: Date.now().toString(),
+        //     content,
+        //     role: "user",
+        //     timestamp: new Date(),
+        // };
 
-        setMessages((prev) => [...prev, userMessage]);
-        setInputValue("");
-        setIsTyping(true);
+        // setMessages((prev) => [...prev, userMessage]);
+        // setInputValue("");
+        // setIsTyping(true);
 
-        // Simulate AI response
-        setTimeout(() => {
-            const response = generateResponse(content, jobTitle, jobDescription, companyName);
+        // // Simulate AI response
+        // setTimeout(() => {
+        //     const response = generateResponse(content, jobTitle, jobDescription, companyName);
 
-            const assistantMessage = {
-                id: (Date.now() + 1).toString(),
-                content: response,
-                role: "assistant",
-                timestamp: new Date(),
-            };
+        //     const assistantMessage = {
+        //         id: (Date.now() + 1).toString(),
+        //         content: response,
+        //         role: "assistant",
+        //         timestamp: new Date(),
+        //     };
 
-            setMessages((prev) => [...prev, assistantMessage]);
-            setIsTyping(false);
+        //     setMessages((prev) => [...prev, assistantMessage]);
+        //     setIsTyping(false);
 
-            // Generate new suggested questions based on the conversation
-            setSuggestedQuestions(generateSuggestedQuestions(content, jobTitle));
-        }, 1500);
+        //     // Generate new suggested questions based on the conversation
+        //     setSuggestedQuestions(generateSuggestedQuestions(content, jobTitle));
+        // }, 1500);
     };
 
     const handleKeyDown = (e) => {
@@ -207,74 +207,74 @@ function formatTime(date) {
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
-// Function to generate AI responses based on the job details
-function generateResponse(question, jobTitle, jobDescription, companyName) {
-    const lowerQuestion = question.toLowerCase();
+// // Function to generate AI responses based on the job details
+// function generateResponse(question, jobTitle, jobDescription, companyName) {
+//     const lowerQuestion = question.toLowerCase();
 
-    // Extract skills from job description
-    const skillsMatch = jobDescription?.match(/experience with ([^.]+)/gi) || [];
-    const skills = skillsMatch.map((match) => match.replace("Experience with ", "").trim());
+//     // Extract skills from job description
+//     const skillsMatch = jobDescription?.match(/experience with ([^.]+)/gi) || [];
+//     const skills = skillsMatch.map((match) => match.replace("Experience with ", "").trim());
 
-    // Extract responsibilities from job description
-    const responsibilitiesMatch = jobDescription.match(/<li>([^<]+)<\/li>/g) || [];
-    const responsibilities = responsibilitiesMatch
-        .map((match) => match.replace(/<li>|<\/li>/g, "").trim())
-        .filter((resp) => resp.length > 10)
-        .slice(0, 5);
+//     // Extract responsibilities from job description
+//     const responsibilitiesMatch = jobDescription.match(/<li>([^<]+)<\/li>/g) || [];
+//     const responsibilities = responsibilitiesMatch
+//         .map((match) => match.replace(/<li>|<\/li>/g, "").trim())
+//         .filter((resp) => resp.length > 10)
+//         .slice(0, 5);
 
-    // Check for common questions and provide appropriate responses
-    if (lowerQuestion.includes("skill") || lowerQuestion.includes("requirement")) {
-        return `For the ${jobTitle} position at ${companyName}, the key skills required include: ${skills.join(", ")}. The job also requires strong problem-solving abilities and good communication skills.`;
-    }
+//     // Check for common questions and provide appropriate responses
+//     if (lowerQuestion.includes("skill") || lowerQuestion.includes("requirement")) {
+//         return `For the ${jobTitle} position at ${companyName}, the key skills required include: ${skills.join(", ")}. The job also requires strong problem-solving abilities and good communication skills.`;
+//     }
 
-    if (lowerQuestion.includes("experience") || lowerQuestion.includes("years")) {
-        const experienceMatch = jobDescription.match(/(\d+\+?\s*years?|entry level|senior|junior)/i);
-        const experience = experienceMatch ? experienceMatch[0] : "3-5 years";
-        return `This position typically requires ${experience} of relevant experience in the field. The exact requirements may vary based on your specific skills and background.`;
-    }
+//     if (lowerQuestion.includes("experience") || lowerQuestion.includes("years")) {
+//         const experienceMatch = jobDescription.match(/(\d+\+?\s*years?|entry level|senior|junior)/i);
+//         const experience = experienceMatch ? experienceMatch[0] : "3-5 years";
+//         return `This position typically requires ${experience} of relevant experience in the field. The exact requirements may vary based on your specific skills and background.`;
+//     }
 
-    if (lowerQuestion.includes("remote") || lowerQuestion.includes("work from home") || lowerQuestion.includes("location")) {
-        if (jobDescription.toLowerCase().includes("remote")) {
-            return `Yes, this position offers remote work options. You can work from anywhere with a reliable internet connection.`;
-        } else if (jobDescription.toLowerCase().includes("hybrid")) {
-            return `This position offers a hybrid work arrangement, combining some days in the office and some remote work.`;
-        } else {
-            return `Based on the job description, this appears to be an on-site position. However, you can always ask about flexible work arrangements during the interview process.`;
-        }
-    }
+//     if (lowerQuestion.includes("remote") || lowerQuestion.includes("work from home") || lowerQuestion.includes("location")) {
+//         if (jobDescription.toLowerCase().includes("remote")) {
+//             return `Yes, this position offers remote work options. You can work from anywhere with a reliable internet connection.`;
+//         } else if (jobDescription.toLowerCase().includes("hybrid")) {
+//             return `This position offers a hybrid work arrangement, combining some days in the office and some remote work.`;
+//         } else {
+//             return `Based on the job description, this appears to be an on-site position. However, you can always ask about flexible work arrangements during the interview process.`;
+//         }
+//     }
 
-    if (lowerQuestion.includes("responsibilit") || lowerQuestion.includes("role") || lowerQuestion.includes("do")) {
-        return `As a ${jobTitle} at ${companyName}, your main responsibilities would include:\n\n${responsibilities.map((r) => `• ${r}`).join("\n")}`;
-    }
+//     if (lowerQuestion.includes("responsibilit") || lowerQuestion.includes("role") || lowerQuestion.includes("do")) {
+//         return `As a ${jobTitle} at ${companyName}, your main responsibilities would include:\n\n${responsibilities.map((r) => `• ${r}`).join("\n")}`;
+//     }
 
-    if (lowerQuestion.includes("salary") || lowerQuestion.includes("pay") || lowerQuestion.includes("compensation")) {
-        const salaryMatch = jobDescription.match(/\$[\d,]+-\$[\d,]+|\$[\d,]+/);
-        const salary = salaryMatch ? salaryMatch[0] : "competitive";
-        return `The salary range for this position is ${salary}. This may be negotiable based on your experience and qualifications.`;
-    }
+//     if (lowerQuestion.includes("salary") || lowerQuestion.includes("pay") || lowerQuestion.includes("compensation")) {
+//         const salaryMatch = jobDescription.match(/\$[\d,]+-\$[\d,]+|\$[\d,]+/);
+//         const salary = salaryMatch ? salaryMatch[0] : "competitive";
+//         return `The salary range for this position is ${salary}. This may be negotiable based on your experience and qualifications.`;
+//     }
 
-    if (lowerQuestion.includes("interview") || lowerQuestion.includes("process")) {
-        return `The interview process at ${companyName} typically involves an initial screening call, followed by a technical assessment, and finally an interview with the team. The entire process usually takes 2-3 weeks.`;
-    }
+//     if (lowerQuestion.includes("interview") || lowerQuestion.includes("process")) {
+//         return `The interview process at ${companyName} typically involves an initial screening call, followed by a technical assessment, and finally an interview with the team. The entire process usually takes 2-3 weeks.`;
+//     }
 
-    if (lowerQuestion.includes("apply") || lowerQuestion.includes("application")) {
-        return `To apply for this position, click the "Apply Now" button on the job details page. You'll need to submit your resume and possibly answer a few screening questions. Make sure your resume highlights the skills and experience relevant to this role.`;
-    }
+//     if (lowerQuestion.includes("apply") || lowerQuestion.includes("application")) {
+//         return `To apply for this position, click the "Apply Now" button on the job details page. You'll need to submit your resume and possibly answer a few screening questions. Make sure your resume highlights the skills and experience relevant to this role.`;
+//     }
 
-    if (lowerQuestion.includes("benefit") || lowerQuestion.includes("perks") || lowerQuestion.includes("insurance")) {
-        const benefitsMatch = jobDescription.match(/<h3>Benefits<\/h3>[\s\S]*?<\/ul>/i);
-        if (benefitsMatch) {
-            const benefitsList = benefitsMatch[0].match(/<li>([^<]+)<\/li>/g) || [];
-            const benefits = benefitsList.map((match) => match.replace(/<li>|<\/li>/g, "").trim());
-            return `${companyName} offers the following benefits:\n\n${benefits.map((b) => `• ${b}`).join("\n")}`;
-        } else {
-            return `${companyName} typically offers competitive benefits which may include health insurance, retirement plans, paid time off, and professional development opportunities. Specific details would be discussed during the interview process.`;
-        }
-    }
+//     if (lowerQuestion.includes("benefit") || lowerQuestion.includes("perks") || lowerQuestion.includes("insurance")) {
+//         const benefitsMatch = jobDescription.match(/<h3>Benefits<\/h3>[\s\S]*?<\/ul>/i);
+//         if (benefitsMatch) {
+//             const benefitsList = benefitsMatch[0].match(/<li>([^<]+)<\/li>/g) || [];
+//             const benefits = benefitsList.map((match) => match.replace(/<li>|<\/li>/g, "").trim());
+//             return `${companyName} offers the following benefits:\n\n${benefits.map((b) => `• ${b}`).join("\n")}`;
+//         } else {
+//             return `${companyName} typically offers competitive benefits which may include health insurance, retirement plans, paid time off, and professional development opportunities. Specific details would be discussed during the interview process.`;
+//         }
+//     }
 
-    // Default response for other questions
-    return `That's a great question about the ${jobTitle} position at ${companyName}. While I don't have the specific information in the job posting, this is something you could ask during the interview process or reach out to the recruiter for more details.`;
-}
+//     // Default response for other questions
+//     return `That's a great question about the ${jobTitle} position at ${companyName}. While I don't have the specific information in the job posting, this is something you could ask during the interview process or reach out to the recruiter for more details.`;
+// }
 
 // Function to generate suggested questions based on the conversation
 function generateSuggestedQuestions(lastQuestion, jobTitle) {
