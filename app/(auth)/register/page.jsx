@@ -9,10 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { AnimatedButton } from "@/components/ui/animated-button";
+import { AnimatedButton } from "@/components/animated-button";
 import { Progress } from "@/components/ui/progress";
-import { ParticleEngine } from "@/components/ui/particles/particle-engine";
-import { RevealOnScroll } from "@/components/ui/reveal-on-scroll";
+import { RevealOnScroll } from "@/components/reveal-on-scroll";
 
 export default function RegisterPage() {
     const router = useRouter();
@@ -24,7 +23,7 @@ export default function RegisterPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = (useState < string) | (null > null);
+    const [error, setError] = useState ( null);
     const [passwordStrength, setPasswordStrength] = useState(0);
     const [passwordChecks, setPasswordChecks] = useState({
         length: false,
@@ -109,15 +108,6 @@ export default function RegisterPage() {
 
     return (
         <>
-            <ParticleEngine
-                active={showSuccessParticles}
-                options={{
-                    type: "confetti",
-                    particleCount: 150,
-                    duration: 2000,
-                }}
-            />
-
             <div className="w-full max-w-md">
                 <RevealOnScroll>
                     <Card className="border-none shadow-lg">

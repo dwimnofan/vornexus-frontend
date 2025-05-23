@@ -10,9 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { AnimatedButton } from "@/components/ui/animated-button";
-import { ParticleEngine } from "@/components/ui/particles/particle-engine";
-import { RevealOnScroll } from "@/components/ui/reveal-on-scroll";
+import { AnimatedButton } from "@/components/animated-button";
+import { RevealOnScroll } from "@/components/reveal-on-scroll";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -20,7 +19,7 @@ export default function LoginPage() {
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = (useState < string) | (null > null);
+    const [error, setError] = useState  (null);
     const [showSuccessParticles, setShowSuccessParticles] = useState(false);
 
     const handleSubmit = async (e) => {
@@ -47,15 +46,6 @@ export default function LoginPage() {
 
     return (
         <>
-            <ParticleEngine
-                active={showSuccessParticles}
-                options={{
-                    type: "sparkles",
-                    particleCount: 100,
-                    duration: 2000,
-                }}
-            />
-
             <div className="w-full max-w-md">
                 <RevealOnScroll>
                     <Card className="border-none shadow-lg">
