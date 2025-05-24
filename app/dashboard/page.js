@@ -5,6 +5,7 @@ import Link from "next/link";
 import { RevealOnScroll } from "@/components/reveal-on-scroll";
 import { StaggeredAppear } from "@/components/staggered-appear";
 import { AnimatedButton } from "@/components/animated-button";
+import { requireAuth } from "@/lib/auth/dal";
 
 // Sample job data
 const recentJobs = [
@@ -46,13 +47,16 @@ const recentJobs = [
     },
 ];
 
-export default function Dashboard() {
+export default async function Dashboard() {
+    // Require authentication - will redirect to login if not authenticated
+    const session = await requireAuth();
+    
     return (
         <div className="space-y-8">
             <RevealOnScroll>
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-                    <p className="text-muted-foreground mt-2">Welcome to CariFit. Let&#39;s find the perfect job for you.</p>
+                    <p className="text-muted-foreground mt-2">Welcome back, {session.user.name}! Let&#39;s find the perfect job for you.</p>
                 </div>
             </RevealOnScroll>
 
@@ -96,19 +100,24 @@ export default function Dashboard() {
                 </RevealOnScroll>
 
                 <RevealOnScroll delay={300}>
-                    <Card className="transition-all duration-300 hover:shadow-md hover:scale-[1.02]">
+                    <Card className="relative transition-all duration-300 hover:shadow-md hover:scale-[1.02] overflow-hidden">
+                        <div className="absolute inset-0 z-10 pointer-events-none">
+                            <div className="absolute top-6 -right-12 bg-gradient-to-r from-black to-gray-500 text-white text-sm font-bold px-12 py-2 transform rotate-45 shadow-lg">
+                                Coming Soon
+                            </div>
+                        </div>
                         <CardHeader className="pb-2">
                             <CardTitle className="text-base font-medium">Profile Strength</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="flex flex-col items-center justify-center py-4">
+                            <div className="flex flex-col items-center justify-center py-4 opacity-60">
                                 <div className="mb-4 rounded-full bg-primary/10 p-3 transition-all duration-300 hover:scale-110 hover:bg-primary/20 group">
                                     <BarChart className="h-6 w-6 text-primary transition-transform duration-300 group-hover:rotate-6" />
                                 </div>
                                 <p className="mb-4 text-sm text-center text-muted-foreground">Improve your profile to get better job matches</p>
-                                <Link href="/dashboard/profile">
-                                    <AnimatedButton size="sm">Improve Profile</AnimatedButton>
-                                </Link>
+                                <div className="cursor-not-allowed">
+                                    <AnimatedButton size="sm" disabled>Improve Profile</AnimatedButton>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
