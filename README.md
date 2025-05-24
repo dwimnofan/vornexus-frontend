@@ -22,7 +22,7 @@
 
 ### API Integration Checklist
 
-- [x]Register
-- [x]Login
-- [x]Verify Token
-- [x]Upload CV
+- [x] Register
+- [x] Login
+- [x] Verify Token
+- [x] Upload CV
