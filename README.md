@@ -18,3 +18,11 @@
 - **Search Functionality**: Users can search for jobs by title, company, location, or skills.
 - **Filters**: Users can filter job listings by location (Remote) and match percentage (High Match).
 - **Sorting Options**: Users can sort job listings by match percentage, most recent postings, or company name.
+
+
+### API Integration Checklist
+
+- [x]Register
+- [x]Login
+- [x]Verify Token
+- [x]Upload CV

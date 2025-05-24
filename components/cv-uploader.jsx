@@ -13,28 +13,72 @@ export function CVUploader({ onUploadComplete, className }) {
     const [status, setStatus] = useState("idle");
     const [progress, setProgress] = useState(0);
     const [isDragActive, setIsDragActive] = useState(false);
+    const [uploadResult, setUploadResult] = useState(null);
+    const [errorMessage, setErrorMessage] = useState(null);
+
+    const uploadFile = async (selectedFile) => {
+        try {
+            setStatus("uploading");
+            setProgress(0);
+            setErrorMessage(null);
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            const progressInterval = setInterval(() => {
+                setProgress(prev => {
+                    const newProgress = prev + 10;
+                    return newProgress > 90 ? 90 : newProgress;
+                });
+            }, 200);
+
+            const response = await fetch('/api/cv/upload', {
+                method: 'POST',
+                credentials: 'include',
+                body: formData,
+            });
+
+            clearInterval(progressInterval);
+            setProgress(100);
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                
+                // Handle authentication errors
+                if (response.status === 401) {
+                    throw new Error('Session expired. Please log in again.');
+                }
+                
+                throw new Error(errorData.error || 'Upload failed');
+            }
+
+            const result = await response.json();
+            setUploadResult(result);
+            setStatus("success");
+            
+            if (onUploadComplete) {
+                onUploadComplete(selectedFile, result);
+            }
+
+        } catch (error) {
+            setStatus("error");
+            setErrorMessage(error.message);
+            console.error('Upload error:', error);
+            
+            if (error.message.includes('Session expired')) {
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 2000);
+            }
+        }
+    };
 
     const onDrop = useCallback(
         (acceptedFiles) => {
             const selectedFile = acceptedFiles[0];
             if (selectedFile) {
                 setFile(selectedFile);
-                setStatus("uploading");
-
-                // Simulate upload progress
-                let currentProgress = 0;
-                const interval = setInterval(() => {
-                    currentProgress += 5;
-                    setProgress(currentProgress);
-
-                    if (currentProgress >= 100) {
-                        clearInterval(interval);
-                        setStatus("success");
-                        if (onUploadComplete) {
-                            onUploadComplete(selectedFile);
-                        }
-                    }
-                }, 150);
+                uploadFile(selectedFile);
             }
         },
         [onUploadComplete]
@@ -58,9 +102,10 @@ export function CVUploader({ onUploadComplete, className }) {
         setFile(null);
         setStatus("idle");
         setProgress(0);
+        setUploadResult(null);
+        setErrorMessage(null);
     };
 
-    // Animation for progress bar
     useEffect(() => {
         if (status === "uploading") {
             const element = document.querySelector(".progress-pulse");
@@ -70,7 +115,6 @@ export function CVUploader({ onUploadComplete, className }) {
 
     return (
         <div className={cn("w-full", className)}>
-
             <div
                 {...getRootProps()}
                 className={cn(
@@ -114,13 +158,17 @@ export function CVUploader({ onUploadComplete, className }) {
                         <div className="mb-4 transform transition-all duration-500 animate-bounce-once">
                             <CheckCircle className="h-12 w-12 text-accent" />
                         </div>
-                        <h3 className="text-lg font-semibold mb-2">Upload Complete!</h3>
-                        <p className="text-sm text-muted-foreground mb-4">{file?.name}</p>
+                        <p className="text-sm text-muted-foreground mb-2">{file?.name}</p>
+                        {uploadResult && (
+                            <div className="text-sm text-muted-foreground mb-4 space-y-1">
+
+                                <h3 className="text-green-600">{uploadResult.message}</h3>
+                            </div>
+                        )}
                         <div className="flex gap-2">
                             <Button variant="outline" size="sm" onClick={resetUpload}>
-                                Upload Another
+                                Upload Another CV
                             </Button>
-                            <AnimatedButton size="sm">Continue</AnimatedButton>
                         </div>
                     </>
                 )}
@@ -131,7 +179,9 @@ export function CVUploader({ onUploadComplete, className }) {
                             <AlertCircle className="h-12 w-12 text-destructive" />
                         </div>
                         <h3 className="text-lg font-semibold mb-2">Upload Failed</h3>
-                        <p className="text-sm text-muted-foreground mb-4">There was an error uploading your file. Please try again.</p>
+                        <p className="text-sm text-muted-foreground mb-4">
+                            {errorMessage || "There was an error uploading your file. Please try again."}
+                        </p>
                         <AnimatedButton variant="outline" size="sm" onClick={resetUpload}>
                             Try Again
                         </AnimatedButton>
