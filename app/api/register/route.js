@@ -15,6 +15,10 @@ export async function POST(request) {
       );
     }
 
+    // Log environment and request details
+    console.log('Registration API_URL:', process.env.API_URL);
+    console.log('Making registration request to:', process.env.API_URL + '/api/register');
+
     // Forward the request to the backend
     const backendResponse = await fetch(process.env.API_URL + '/api/register', {
       method: 'POST',
@@ -28,12 +32,16 @@ export async function POST(request) {
       }),
     });
 
+    console.log('Registration backend response status:', backendResponse.status);
+    console.log('Registration backend response ok:', backendResponse.ok);
+
     const data = await backendResponse.json();
+    console.log('Registration backend response data:', data);
 
     // If the backend request failed, return the error
     if (!backendResponse.ok) {
       return NextResponse.json(
-        { error: data.message || 'Registration failed' },
+        { error: data.message || data.non_field_errors?.[0] || 'Registration failed' },
         { status: backendResponse.status }
       );
     }
