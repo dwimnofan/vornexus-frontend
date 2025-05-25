@@ -29,15 +29,19 @@ export default function LoginPage() {
         setIsLoading(true);
 
         try {
-            await login(email, password);
+            console.log('Starting login process...');
+            const result = await login(email, password);
+            console.log('Login result:', result);
 
             setShowSuccessParticles(true);
 
             setTimeout(() => {
+                console.log('Redirecting to dashboard...');
                 router.push("/dashboard");
             }, 1000);
 
         } catch (err) {
+            console.error('Login error:', err);
             setError(err.message || "An error occurred during login. Please try again.");
             setIsLoading(false);
         }

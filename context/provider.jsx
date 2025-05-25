@@ -30,9 +30,12 @@ export function AuthProvider({ children }) {
   };
 
   const login = async (email, password) => {
+    console.log('Auth context: Starting login...');
     const data = await auth.login(email, password);
+    console.log('Auth context: Login data received:', data);
     setIsAuthenticated(true);
     setUser(data.user);
+    console.log('Auth context: State updated');
     return data;
   };
 
