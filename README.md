@@ -26,3 +26,4 @@
 - [x] Login
 - [x] Verify Token
 - [x] Upload CV
+# Updated Sun May 25 08:11:42 PM WIB 2025
