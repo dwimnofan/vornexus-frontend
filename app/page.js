@@ -1,3 +1,7 @@
+"use client"
+
+import { toast } from "sonner";
+import { useEffect } from "react"
 import Link from "next/link";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
@@ -10,6 +14,20 @@ import { AnimatedButton } from "@/components/animated-button";
 import Image from "next/image";
 
 export default function Home() {
+    useEffect(() => {
+        // Add a delay to ensure everything is mounted
+        const timer = setTimeout(() => {
+          console.log("Attempting to show toast...")
+          toast.success("🚀 Welcome to CariFit!", {
+            description: "Your AI-powered job matching platform",
+            duration: 5000,
+          })
+        }, 1000)
+    
+        return () => clearTimeout(timer)
+      }, [])
+    
+    
     return (
         <div className="flex min-h-screen flex-col">
             <Navbar />
