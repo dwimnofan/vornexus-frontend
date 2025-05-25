@@ -78,7 +78,7 @@ export function JobCard({ job }) {
             </CardContent>
             <CardFooter className="flex items-center justify-between p-6 pt-0 border-t mt-auto">
                 <p className="text-sm text-muted-foreground">Posted {job.postedDate}</p>
-                <Link href={`/dashboard/matches/${job.id}`} className="block h-full">
+                <Link href={`/dashboard/matches/${job.jobHash}`} className="block h-full">
                     <AnimatedButton size="sm" className="gap-1.5  cursor-pointer">
                         View Job <ExternalLink className="h-3.5 w-3.5" />
                     </AnimatedButton>

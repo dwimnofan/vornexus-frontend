@@ -9,7 +9,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-export function ChatBot({ jobTitle, jobDescription, companyName, initialSuggestedQuestions }) {
+export function ChatBot({ jobTitle, jobDescription, companyName, initialSuggestedQuestions, jobId }) {
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState([]);
     const [inputValue, setInputValue] = useState("");
@@ -25,8 +25,10 @@ export function ChatBot({ jobTitle, jobDescription, companyName, initialSuggeste
 
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
+    const wsRef = useRef(null); // ref untuk WebSocket
+    const job_id = jobId;
 
-    // Scroll to bottom of messages
+    // Scroll to bottom when messages change
     useEffect(() => {
         if (messagesEndRef.current) {
             messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
@@ -42,56 +44,61 @@ export function ChatBot({ jobTitle, jobDescription, companyName, initialSuggeste
         }
     }, [isOpen]);
 
-    // Add welcome message when chat first opens
+    // Setup WebSocket connection when chat opens
     useEffect(() => {
-        if (isOpen && messages.length === 0) {
-            setIsTyping(true);
-            setTimeout(() => {
-                setMessages([
-                    {
-                        id: "welcome",
-                        content: `Hi there! I'm the CariFit Assistant for the ${jobTitle} position at ${companyName}. How can I help you with your job application?`,
-                        role: "assistant",
-                        timestamp: new Date(),
-                    },
-                ]);
-                setIsTyping(false);
-            }, 1000);
-        }
-    }, [isOpen, messages.length, jobTitle, companyName]);
+        if (!isOpen) return;
 
-    const handleSendMessage = async (content) => {
-        // if (!content.trim()) return;
+        const ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
+        const socket = new WebSocket(`${ws_scheme}://localhost:8000/ws/chat/${job_id}/`);
+        wsRef.current = socket;
 
-        // // Add user message
-        // const userMessage = {
-        //     id: Date.now().toString(),
-        //     content,
-        //     role: "user",
-        //     timestamp: new Date(),
-        // };
+        socket.onopen = () => {
+            console.log("WebSocket connected");
+        };
 
-        // setMessages((prev) => [...prev, userMessage]);
-        // setInputValue("");
-        // setIsTyping(true);
+        socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
 
-        // // Simulate AI response
-        // setTimeout(() => {
-        //     const response = generateResponse(content, jobTitle, jobDescription, companyName);
+            setMessages((prev) => [
+                ...prev,
+                {
+                    id: Date.now().toString(),
+                    content: data.message,
+                    role: "assistant",
+                    timestamp: new Date(),
+                },
+            ]);
+            setIsTyping(false);
+        };
 
-        //     const assistantMessage = {
-        //         id: (Date.now() + 1).toString(),
-        //         content: response,
-        //         role: "assistant",
-        //         timestamp: new Date(),
-        //     };
+        socket.onerror = (e) => {
+            console.error("WebSocket error:", e);
+            setIsTyping(false);
+        };
 
-        //     setMessages((prev) => [...prev, assistantMessage]);
-        //     setIsTyping(false);
+        socket.onclose = () => {
+            console.log("WebSocket disconnected");
+        };
 
-        //     // Generate new suggested questions based on the conversation
-        //     setSuggestedQuestions(generateSuggestedQuestions(content, jobTitle));
-        // }, 1500);
+        return () => socket.close();
+    }, [isOpen, jobId]);
+
+    // Send message via WebSocket
+    const handleSendMessage = (content) => {
+        if (!content.trim() || !wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
+
+        const userMessage = {
+            id: Date.now().toString(),
+            content,
+            role: "user",
+            timestamp: new Date(),
+        };
+
+        setMessages((prev) => [...prev, userMessage]);
+        setInputValue("");
+        setIsTyping(true);
+
+        wsRef.current.send(JSON.stringify({ message: content }));
     };
 
     const handleKeyDown = (e) => {
@@ -100,6 +107,20 @@ export function ChatBot({ jobTitle, jobDescription, companyName, initialSuggeste
             handleSendMessage(inputValue);
         }
     };
+
+    // Tampilkan welcome message saat chat dibuka pertama kali
+    useEffect(() => {
+        if (isOpen && messages.length === 0) {
+            setMessages([
+                {
+                    id: "welcome",
+                    content: `Hi there! I'm the CariFit Assistant for the ${jobTitle} position at ${companyName}. How can I help you with your job application?`,
+                    role: "assistant",
+                    timestamp: new Date(),
+                },
+            ]);
+        }
+    }, [isOpen, jobTitle, companyName]);
 
     return (
         <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
@@ -184,190 +205,24 @@ export function ChatBot({ jobTitle, jobDescription, companyName, initialSuggeste
 
             {/* Chat toggle button */}
             <motion.button
-                className={cn("flex items-center gap-2 rounded-full shadow-lg p-4 text-white transition-colors", isOpen ? "bg-primary/80 hover:bg-primary/70" : "bg-primary hover:bg-primary/90")}
+                className={cn("flex items-center gap-2 rounded-full shadow-lg p-4 text-white transition-colors", isOpen ? "bg-red-500 hover:bg-red-600" : "bg-primary hover:bg-primary-dark")}
                 onClick={() => setIsOpen(!isOpen)}
-                whileHover={{ scale: 1.05 }}
+                aria-label="Toggle chat"
+                initial={{ scale: 0.9 }}
+                animate={{ scale: 1 }}
+                whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
             >
-                {isOpen ? (
-                    <X className="h-5 w-5" />
-                ) : (
-                    <>
-                        <MessageSquare className="h-5 w-5" />
-                        <span className="font-medium">Job Assistant</span>
-                    </>
-                )}
+                {isOpen ? <X className="h-5 w-5" /> : <MessageSquare className="h-5 w-5" />}
+                <span className="hidden sm:inline-block font-semibold">CariFit Assistant</span>
             </motion.button>
         </div>
     );
 }
 
-// Helper function to format time
+// Helper untuk format waktu HH:mm
 function formatTime(date) {
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-}
-
-// // Function to generate AI responses based on the job details
-// function generateResponse(question, jobTitle, jobDescription, companyName) {
-//     const lowerQuestion = question.toLowerCase();
-
-//     // Extract skills from job description
-//     const skillsMatch = jobDescription?.match(/experience with ([^.]+)/gi) || [];
-//     const skills = skillsMatch.map((match) => match.replace("Experience with ", "").trim());
-
-//     // Extract responsibilities from job description
-//     const responsibilitiesMatch = jobDescription.match(/<li>([^<]+)<\/li>/g) || [];
-//     const responsibilities = responsibilitiesMatch
-//         .map((match) => match.replace(/<li>|<\/li>/g, "").trim())
-//         .filter((resp) => resp.length > 10)
-//         .slice(0, 5);
-
-//     // Check for common questions and provide appropriate responses
-//     if (lowerQuestion.includes("skill") || lowerQuestion.includes("requirement")) {
-//         return `For the ${jobTitle} position at ${companyName}, the key skills required include: ${skills.join(", ")}. The job also requires strong problem-solving abilities and good communication skills.`;
-//     }
-
-//     if (lowerQuestion.includes("experience") || lowerQuestion.includes("years")) {
-//         const experienceMatch = jobDescription.match(/(\d+\+?\s*years?|entry level|senior|junior)/i);
-//         const experience = experienceMatch ? experienceMatch[0] : "3-5 years";
-//         return `This position typically requires ${experience} of relevant experience in the field. The exact requirements may vary based on your specific skills and background.`;
-//     }
-
-//     if (lowerQuestion.includes("remote") || lowerQuestion.includes("work from home") || lowerQuestion.includes("location")) {
-//         if (jobDescription.toLowerCase().includes("remote")) {
-//             return `Yes, this position offers remote work options. You can work from anywhere with a reliable internet connection.`;
-//         } else if (jobDescription.toLowerCase().includes("hybrid")) {
-//             return `This position offers a hybrid work arrangement, combining some days in the office and some remote work.`;
-//         } else {
-//             return `Based on the job description, this appears to be an on-site position. However, you can always ask about flexible work arrangements during the interview process.`;
-//         }
-//     }
-
-//     if (lowerQuestion.includes("responsibilit") || lowerQuestion.includes("role") || lowerQuestion.includes("do")) {
-//         return `As a ${jobTitle} at ${companyName}, your main responsibilities would include:\n\n${responsibilities.map((r) => `• ${r}`).join("\n")}`;
-//     }
-
-//     if (lowerQuestion.includes("salary") || lowerQuestion.includes("pay") || lowerQuestion.includes("compensation")) {
-//         const salaryMatch = jobDescription.match(/\$[\d,]+-\$[\d,]+|\$[\d,]+/);
-//         const salary = salaryMatch ? salaryMatch[0] : "competitive";
-//         return `The salary range for this position is ${salary}. This may be negotiable based on your experience and qualifications.`;
-//     }
-
-//     if (lowerQuestion.includes("interview") || lowerQuestion.includes("process")) {
-//         return `The interview process at ${companyName} typically involves an initial screening call, followed by a technical assessment, and finally an interview with the team. The entire process usually takes 2-3 weeks.`;
-//     }
-
-//     if (lowerQuestion.includes("apply") || lowerQuestion.includes("application")) {
-//         return `To apply for this position, click the "Apply Now" button on the job details page. You'll need to submit your resume and possibly answer a few screening questions. Make sure your resume highlights the skills and experience relevant to this role.`;
-//     }
-
-//     if (lowerQuestion.includes("benefit") || lowerQuestion.includes("perks") || lowerQuestion.includes("insurance")) {
-//         const benefitsMatch = jobDescription.match(/<h3>Benefits<\/h3>[\s\S]*?<\/ul>/i);
-//         if (benefitsMatch) {
-//             const benefitsList = benefitsMatch[0].match(/<li>([^<]+)<\/li>/g) || [];
-//             const benefits = benefitsList.map((match) => match.replace(/<li>|<\/li>/g, "").trim());
-//             return `${companyName} offers the following benefits:\n\n${benefits.map((b) => `• ${b}`).join("\n")}`;
-//         } else {
-//             return `${companyName} typically offers competitive benefits which may include health insurance, retirement plans, paid time off, and professional development opportunities. Specific details would be discussed during the interview process.`;
-//         }
-//     }
-
-//     // Default response for other questions
-//     return `That's a great question about the ${jobTitle} position at ${companyName}. While I don't have the specific information in the job posting, this is something you could ask during the interview process or reach out to the recruiter for more details.`;
-// }
-
-// Function to generate suggested questions based on the conversation
-function generateSuggestedQuestions(lastQuestion, jobTitle) {
-    const lowerQuestion = lastQuestion.toLowerCase();
-
-    // Default questions
-    const defaultQuestions = [
-        { id: "1", text: "What skills are required for this job?" },
-        { id: "2", text: "What is the expected experience level?" },
-        { id: "3", text: "Is remote work available for this position?" },
-        { id: "4", text: "What are the main responsibilities?" },
-    ];
-
-    // If user asked about skills, suggest related questions
-    if (lowerQuestion.includes("skill") || lowerQuestion.includes("requirement")) {
-        return [
-            { id: "s1", text: "What tools or technologies are used?" },
-            { id: "s2", text: "Are there any certifications required?" },
-            { id: "s3", text: "How important is prior experience?" },
-            { id: "s4", text: "What soft skills are valued?" },
-        ];
-    }
-
-    // If user asked about experience, suggest related questions
-    if (lowerQuestion.includes("experience") || lowerQuestion.includes("years")) {
-        return [
-            { id: "e1", text: "Do you consider equivalent experience?" },
-            { id: "e2", text: "What level of education is required?" },
-            { id: "e3", text: "Is this a junior or senior position?" },
-            { id: "e4", text: "What growth opportunities are there?" },
-        ];
-    }
-
-    // If user asked about remote work, suggest related questions
-    if (lowerQuestion.includes("remote") || lowerQuestion.includes("location")) {
-        return [
-            { id: "r1", text: "Is relocation assistance provided?" },
-            { id: "r2", text: "Are there specific working hours?" },
-            { id: "r3", text: "How often would I need to be in office?" },
-            { id: "r4", text: "Is there a home office stipend?" },
-        ];
-    }
-
-    // If user asked about responsibilities, suggest related questions
-    if (lowerQuestion.includes("responsibilit") || lowerQuestion.includes("role")) {
-        return [
-            { id: "j1", text: "What does a typical day look like?" },
-            { id: "j2", text: "What team would I be working with?" },
-            { id: "j3", text: "What are the key performance metrics?" },
-            { id: "j4", text: "What challenges might I face in this role?" },
-        ];
-    }
-
-    // If user asked about salary, suggest related questions
-    if (lowerQuestion.includes("salary") || lowerQuestion.includes("pay")) {
-        return [
-            { id: "p1", text: "What benefits are offered?" },
-            { id: "p2", text: "Is there a bonus structure?" },
-            { id: "p3", text: "How often are performance reviews?" },
-            { id: "p4", text: "Are there opportunities for raises?" },
-        ];
-    }
-
-    // If user asked about the interview process, suggest related questions
-    if (lowerQuestion.includes("interview") || lowerQuestion.includes("process")) {
-        return [
-            { id: "i1", text: "How should I prepare for the interview?" },
-            { id: "i2", text: "What's the timeline for hiring?" },
-            { id: "i3", text: "Will there be a technical assessment?" },
-            { id: "i4", text: "Who will I be interviewing with?" },
-        ];
-    }
-
-    // If user asked about applying, suggest related questions
-    if (lowerQuestion.includes("apply") || lowerQuestion.includes("application")) {
-        return [
-            { id: "a1", text: "What should I highlight in my resume?" },
-            { id: "a2", text: "Is a cover letter required?" },
-            { id: "a3", text: "How long is the application process?" },
-            { id: "a4", text: "When can I expect to hear back?" },
-        ];
-    }
-
-    // If user asked about benefits, suggest related questions
-    if (lowerQuestion.includes("benefit") || lowerQuestion.includes("perks")) {
-        return [
-            { id: "b1", text: "Is there a retirement plan?" },
-            { id: "b2", text: "How much paid time off is offered?" },
-            { id: "b3", text: "Are there professional development benefits?" },
-            { id: "b4", text: "What health insurance options are available?" },
-        ];
-    }
-
-    // Return default questions if no specific category is detected
-    return defaultQuestions;
+    if (!date) return "";
+    const d = new Date(date);
+    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
