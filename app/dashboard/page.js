@@ -1,3 +1,6 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { JobCard } from "@/components/job-card";
 import { FileUp, Briefcase, BarChart } from "lucide-react";
@@ -5,58 +8,41 @@ import Link from "next/link";
 import { RevealOnScroll } from "@/components/reveal-on-scroll";
 import { StaggeredAppear } from "@/components/staggered-appear";
 import { AnimatedButton } from "@/components/animated-button";
-import { requireAuth } from "@/lib/auth/dal";
 
-// Sample job data
-const recentJobs = [
-    {
-        id: "1",
-        title: "Frontend Developer",
-        company: "TechCorp",
-        logo: "/placeholder.svg?height=48&width=48",
-        location: "Remote",
-        matchPercentage: 92,
-        skills: ["React", "TypeScript", "Tailwind CSS"],
-        postedDate: "2 days ago",
-        url: "#",
-        description: "We're looking for a Frontend Developer to join our team. You'll be responsible for building user interfaces for our web applications using React and TypeScript.",
-    },
-    {
-        id: "2",
-        title: "UX Designer",
-        company: "DesignHub",
-        logo: "/placeholder.svg?height=48&width=48",
-        location: "New York, NY",
-        matchPercentage: 85,
-        skills: ["Figma", "UI/UX", "Prototyping"],
-        postedDate: "1 week ago",
-        url: "#",
-        description: "Join our design team to create beautiful and intuitive user experiences. You'll work closely with product managers and developers to bring designs to life.",
-    },
-    {
-        id: "3",
-        title: "Full Stack Engineer",
-        company: "GrowthStartup",
-        logo: "/placeholder.svg?height=48&width=48",
-        location: "San Francisco, CA",
-        matchPercentage: 78,
-        skills: ["Node.js", "React", "MongoDB"],
-        postedDate: "3 days ago",
-        url: "#",
-        description: "We're seeking a Full Stack Engineer to help build our platform. You'll work on both frontend and backend development using Node.js, React, and MongoDB.",
-    },
-];
+export default function Dashboard() {
+    const [recentJobs, setRecentJobs] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-export default async function Dashboard() {
-    // Require authentication - will redirect to login if not authenticated
-    const session = await requireAuth();
+    useEffect(() => {
+        const fetchRecentJobs = async () => {
+            try {
+                setLoading(true);
+                const response = await fetch('/api/recommendations?limit=3');
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch job recommendations');
+                }
+                
+                const result = await response.json();
+                setRecentJobs(result.data || []);
+            } catch (err) {
+                console.error('Error fetching recent jobs:', err);
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchRecentJobs();
+    }, []);
     
     return (
         <div className="space-y-8">
             <RevealOnScroll>
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-                    <p className="text-muted-foreground mt-2">Welcome back, {session.user.name}! Let&#39;s find the perfect job for you.</p>
+                    <p className="text-muted-foreground mt-2">Welcome back! Let&#39;s find the perfect job for you.</p>
                 </div>
             </RevealOnScroll>
 
@@ -134,10 +120,28 @@ export default async function Dashboard() {
                             </AnimatedButton>
                         </Link>
                     </div>
-                    {recentJobs.length === 0 ? (
-                        <div className="text-center items-center justify-center">
-                            <h3 className="text-lg font-medium mb-2">No matching jobs found</h3>
-                            <p className="text-muted-foreground mb-4">Try adjusting your search or filters</p>
+                    
+                    {loading ? (
+                        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                            {[...Array(3)].map((_, i) => (
+                                <div key={i} className="bg-muted/30 rounded-lg h-64 animate-pulse" />
+                            ))}
+                        </div>
+                    ) : error ? (
+                        <div className="text-center py-8 bg-muted/30 rounded-lg">
+                            <h3 className="text-lg font-medium mb-2">Unable to load job matches</h3>
+                            <p className="text-muted-foreground mb-4">{error}</p>
+                            <Link href="/dashboard/upload">
+                                <AnimatedButton size="sm">Upload CV to get matches</AnimatedButton>
+                            </Link>
+                        </div>
+                    ) : recentJobs.length === 0 ? (
+                        <div className="text-center py-8 bg-muted/30 rounded-lg">
+                            <h3 className="text-lg font-medium mb-2">No job matches yet</h3>
+                            <p className="text-muted-foreground mb-4">Upload your CV to get personalized job recommendations</p>
+                            <Link href="/dashboard/upload">
+                                <AnimatedButton size="sm">Upload CV</AnimatedButton>
+                            </Link>
                         </div>
                     ) : (
                         <StaggeredAppear className="grid gap-6 md:grid-cols-2 lg:grid-cols-3" staggerAmount={150}>
