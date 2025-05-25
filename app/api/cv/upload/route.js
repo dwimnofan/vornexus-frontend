@@ -40,15 +40,13 @@ export async function POST(request) {
       }, { status: 400 });
     }
 
-    // Create form data for external API
     const externalFormData = new FormData();
     externalFormData.append('file', file);
 
-    // Forward to external API with authorization header
-    const response = await fetch('http://127.0.0.1:8000/api/cv/upload/', {
+    const response = await fetch(`${process.env.API_URL}/api/cv/upload/`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${token}`, // Use token from session
+        'Authorization': `Bearer ${token}`, 
       },
       body: externalFormData,
     });

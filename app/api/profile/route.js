@@ -12,7 +12,6 @@ export async function GET() {
       );
     }
 
-    // Verify token with Django backend
     const response = await fetch(process.env.API_URL + '/api/verify-token', {
       method: 'POST',
       headers: {
@@ -35,7 +34,6 @@ export async function GET() {
         id: userData.user.id,
         name: userData.user.name,
         email: userData.user.email,
-        // Only return safe user data
       }
     });
 

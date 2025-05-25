@@ -3,13 +3,11 @@ import { deleteSessionResponse } from '@/lib/auth/session';
 
 export async function POST() {
   try {
-    // Create response
     const response = NextResponse.json(
       { message: 'Logged out successfully', success: true },
       { status: 200 }
     );
 
-    // Delete session cookie
     return deleteSessionResponse(response);
 
   } catch (error) {
@@ -21,7 +19,6 @@ export async function POST() {
   }
 }
 
-// Handle other HTTP methods
 export async function GET() {
   return NextResponse.json(
     { error: 'Method not allowed' },

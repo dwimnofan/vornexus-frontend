@@ -47,7 +47,7 @@ export async function middleware(request) {
 
   if (isProtectedRoute && session) {
     try {
-      const verifyResponse = await fetch('http://localhost:8000/api/verify-token', {
+      const verifyResponse = await fetch(`${process.env.API_URL}/api/verify-token`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
