@@ -15,6 +15,10 @@ export async function POST(request) {
       );
     }
 
+    // Log environment and request details
+    console.log('API_URL:', process.env.API_URL);
+    console.log('Making request to:', process.env.API_URL + '/api/login');
+
     // Forward the request to the backend
     const backendResponse = await fetch(process.env.API_URL + '/api/login', {
       method: 'POST',
@@ -27,12 +31,16 @@ export async function POST(request) {
       }),
     });
 
+    console.log('Backend response status:', backendResponse.status);
+    console.log('Backend response ok:', backendResponse.ok);
+
     const data = await backendResponse.json();
+    console.log('Backend response data:', data);
 
     // If the backend request failed, return the error
     if (!backendResponse.ok) {
       return NextResponse.json(
-        { error: data.message || 'Login failed' },
+        { error: data.message || data.non_field_errors?.[0] || 'Login failed' },
         { status: backendResponse.status }
       );
     }
@@ -52,6 +60,20 @@ export async function POST(request) {
 
   } catch (error) {
     console.error('Login API error:', error);
+    console.error('Error details:', {
+      message: error.message,
+      cause: error.cause,
+      stack: error.stack
+    });
+    
+    // Check if it's a network error
+    if (error.message.includes('fetch')) {
+      return NextResponse.json(
+        { error: 'Unable to connect to authentication server. Please try again later.' },
+        { status: 503 }
+      );
+    }
+    
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
