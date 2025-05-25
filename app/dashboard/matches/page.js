@@ -1,349 +1,357 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { JobCard } from "@/components/job-card";
+import { useState, useEffect, use } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft, Building, MapPin, Calendar, Clock, Briefcase, DollarSign, Share2, Bookmark, ExternalLink, ChevronRight, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Search, SlidersHorizontal, X, Briefcase } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { MatchPercentage } from "@/components/match-percentage";
+import { AnimatedButton } from "@/components/animated-button";
 import { RevealOnScroll } from "@/components/reveal-on-scroll";
 import { StaggeredAppear } from "@/components/staggered-appear";
-import { Badge } from "@/components/ui/badge";
+import { SkillMatch } from "@/components/skill-match";
+import { JobCard } from "@/components/job-card";
+import { ChatBot } from "@/components/chat/chat-bot";
 
-const FilterButton = ({ filter, isActive, toggleFilter }) => (
-  <Button
-    variant={isActive ? "default" : "outline"}
-    size="sm"
-    onClick={toggleFilter}
-    className="h-8"
-  >
-    {filter}
-  </Button>
-);
+export default function JobDetailPage(props) {
+    const params = use(props.params);
+    const router = useRouter();
+    const [job, setJob] = useState(null);
+    const [allJobs, setAllJobs] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSaved, setIsSaved] = useState(false);
+    const [showApplySuccess, setShowApplySuccess] = useState(false);
+    const [showShareOptions, setShowShareOptions] = useState(false);
+    const [error, setError] = useState(null);
 
-export default function MatchesPage() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState("match");
-  const [filters, setFilters] = useState([]);
-  const [showFilters, setShowFilters] = useState(false);
-  const [jobs, setJobs] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [apiMessage, setApiMessage] = useState(null);
+    useEffect(() => {
+        const fetchJobData = async () => {
+            setIsLoading(true);
+            setError(null);
 
-  useEffect(() => {
-    const fetchRecommendations = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch('/api/recommendations');
-        console.log('Response:', response);
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch recommendations');
-        }
-        
-        const result = await response.json();
-        console.log('API Result:', result);
-        console.log('Jobs data:', result.data);
-        
-        // Log each job to see what fields are missing
-        if (result.data && result.data.length > 0) {
-          result.data.forEach((job, index) => {
-            console.log(`Job ${index}:`, job);
-            console.log(`Job ${index} fields:`, {
-              id: job.id,
-              title: job.title,
-              company: job.company,
-              location: job.location,
-              skills: job.skills,
-              matchPercentage: job.matchPercentage,
-              postedDate: job.postedDate,
-              description: job.description
-            });
-          });
-        }
-        
-        setJobs(result.data || []);
-        setApiMessage(result.message);
-      } catch (err) {
-        setError(err.message);
-        console.error('Error fetching recommendations:', err);
-      } finally {
-        setLoading(false);
-      }
+            try {
+                // Fetch all jobs from recommendations API
+                const response = await fetch("/api/recommendations");
+
+                if (!response.ok) {
+                    throw new Error("Failed to fetch job data");
+                }
+
+                const result = await response.json();
+                const jobs = result.data || [];
+                setAllJobs(jobs);
+
+                // Find the specific job by ID (using job hash as ID)
+                const currentJob = jobs.find((j) => j.id === params.id || j.jobHash === params.id);
+
+                if (currentJob) {
+                    // Transform the job data to match the expected format
+                    const transformedJob = {
+                        id: currentJob.id,
+                        title: currentJob.title,
+                        company: currentJob.company,
+                        logo: currentJob.logo || "/placeholder.svg",
+                        location: currentJob.location,
+                        locationType: currentJob.location.toLowerCase().includes("remote") ? "Remote" : currentJob.location.toLowerCase().includes("hybrid") ? "Hybrid" : "On-site",
+                        jobType: "Full-time", // Default since backend doesn't provide this
+                        salary: "Competitive", // Default since backend doesn't provide this
+                        postedDate: currentJob.postedDate,
+                        applicationDeadline: "30 days", // Default
+                        experience: "3-5 years", // Default
+                        matchPercentage: currentJob.matchPercentage,
+                        skills: currentJob.skills.map((skill) => ({
+                            name: skill,
+                            match: currentJob.matchedSkills ? currentJob.matchedSkills.includes(skill) : false,
+                        })),
+                        description: formatJobDescription(currentJob.description),
+                        companyDescription: `${currentJob.company} is a company in the ${currentJob.industry} industry.`,
+                        companySize: currentJob.employeeSize || "Not specified",
+                        companyIndustry: currentJob.industry,
+                        companyWebsite: "#",
+                        applicationUrl: currentJob.url || "#",
+                        matchReason: currentJob.matchReason || "",
+                        matchedSkills: currentJob.matchedSkills || [],
+                    };
+
+                    setJob(transformedJob);
+                } else {
+                    setError("Job not found");
+                }
+            } catch (err) {
+                console.error("Error fetching job details:", err);
+                setError(err.message);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchJobData();
+    }, [params.id, router]);
+
+    const formatJobDescription = (description) => {
+        if (!description) return "<p>No description available.</p>";
+
+        const paragraphs = description.split("\n\n").filter((p) => p.trim());
+        let formattedHtml = "";
+
+        paragraphs.forEach((paragraph) => {
+            const trimmed = paragraph.trim();
+            if (trimmed.includes(":") && trimmed.length < 100) {
+                formattedHtml += `<h3>${trimmed}</h3>`;
+            } else if (trimmed.includes("•") || trimmed.includes("-")) {
+                const items = trimmed.split(/[•-]/).filter((item) => item.trim());
+                formattedHtml += "<ul>";
+                items.forEach((item) => {
+                    if (item.trim()) {
+                        formattedHtml += `<li>${item.trim()}</li>`;
+                    }
+                });
+                formattedHtml += "</ul>";
+            } else {
+                formattedHtml += `<p>${trimmed}</p>`;
+            }
+        });
+
+        return formattedHtml || `<p>${description}</p>`;
     };
 
-    fetchRecommendations();
-  }, []);
+    const handleApply = () => {
+        if (job.applicationUrl && job.applicationUrl !== "#") {
+            window.open(job.applicationUrl, "_blank");
+        } else {
+            setShowApplySuccess(true);
+            setTimeout(() => {
+                setShowApplySuccess(false);
+            }, 3000);
+        }
+    };
 
-  const filteredJobs = jobs
-    .filter((job) => {
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
+    const handleSaveJob = () => {
+        setIsSaved(!isSaved);
+    };
+
+    const handleShare = () => {
+        setShowShareOptions(!showShareOptions);
+    };
+
+    const jobId = params.id;
+
+    const similarJobs = allJobs
+        .filter((j) => j.id !== params.id && j.jobHash !== params.id)
+        .slice(0, 3)
+        .map((job) => ({
+            id: job.id,
+            title: job.title,
+            company: job.company,
+            logo: job.logo || "/placeholder.svg",
+            location: job.location,
+            matchPercentage: job.matchPercentage,
+            skills: job.skills.slice(0, 3), // Show only first 3 skills
+            postedDate: job.postedDate,
+            description: job.description,
+        }));
+
+    if (isLoading) {
         return (
-          job.title.toLowerCase().includes(query) ||
-          job.company.toLowerCase().includes(query) ||
-          job.location.toLowerCase().includes(query) ||
-          job.skills.some((skill) => skill.toLowerCase().includes(query))
+            <div className="flex items-center justify-center h-[50vh]">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+            </div>
         );
-      }
-      return true;
-    })
-    .filter((job) => {
-      if (filters.length === 0) return true;
-      return filters.some((filter) => {
-        if (filter === "Remote") return job.location.includes("Remote");
-        if (filter === "High Match") return job.matchPercentage >= 80;
-        return job.skills.includes(filter);
-      });
-    })
-    .sort((a, b) => {
-      if (sortBy === "match") return b.matchPercentage - a.matchPercentage;
-      if (sortBy === "recent") {
-        if (a.postedDate.includes("day") && b.postedDate.includes("week"))
-          return -1;
-        if (a.postedDate.includes("week") && b.postedDate.includes("day"))
-          return 1;
-        return 0;
-      }
-      if (sortBy === "company") return a.company.localeCompare(b.company);
-      return 0;
-    });
+    }
 
-  const toggleFilter = (filter) => {
-    setFilters((prevFilters) =>
-      prevFilters.includes(filter)
-        ? prevFilters.filter((f) => f !== filter)
-        : [...prevFilters, filter]
-    );
-  };
-
-  const hasJobsButFiltered = jobs.length > 0 && filteredJobs.length === 0;
-  const hasNoJobsFromAPI = jobs.length === 0;
-
-  if (loading) {
-    return (
-      <div className="space-y-8">
-        <RevealOnScroll>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Job Matches</h1>
-            <p className="text-muted-foreground mt-2">
-              Loading job recommendations...
-            </p>
-          </div>
-        </RevealOnScroll>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="bg-muted/30 rounded-lg h-64 animate-pulse" />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="space-y-8">
-        <RevealOnScroll>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Job Matches</h1>
-            <p className="text-muted-foreground mt-2">
-              Something went wrong loading job recommendations
-            </p>
-          </div>
-        </RevealOnScroll>
-        <div className="text-center py-12 bg-muted/30 rounded-lg">
-          <h3 className="text-lg font-medium mb-2">Error loading recommendations</h3>
-          <p className="text-muted-foreground mb-4">{error}</p>
-          <Button
-            variant="outline"
-            onClick={() => window.location.reload()}
-          >
-            Try again
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-8">
-      <RevealOnScroll>
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Job Matches</h1>
-          <p className="text-muted-foreground mt-2">
-            Jobs that match your skills and experience ({jobs.length} found)
-          </p>
-        </div>
-      </RevealOnScroll>
-
-      {jobs.length > 0 && (
-        <>
-          <RevealOnScroll delay={200}>
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="relative flex-1 group">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
-                <Input
-                  placeholder="Search jobs..."
-                  className="pl-9 transition-all duration-300 focus:ring-2 focus:ring-primary/20"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-              <div className="flex gap-4">
-                <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className="w-[180px] transition-all duration-300 hover:border-primary/50">
-                    <SelectValue placeholder="Sort by" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="match">Match Percentage</SelectItem>
-                    <SelectItem value="recent">Most Recent</SelectItem>
-                    <SelectItem value="company">Company</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button
-                  variant={showFilters ? "default" : "outline"}
-                  size="icon"
-                  className="transition-all duration-300 hover:bg-primary/10 hover:border-primary/50"
-                  onClick={() => setShowFilters(!showFilters)}
-                >
-                  <SlidersHorizontal className="h-4 w-4" />
-                  <span className="sr-only">Filter</span>
+    if (error || !job) {
+        return (
+            <div className="text-center py-12">
+                <h2 className="text-2xl font-bold">Job not found</h2>
+                <p className="text-muted-foreground mt-2">{error || "The job you are looking for does not exist or has been removed."}</p>
+                <Button asChild className="mt-4">
+                    <Link href="/dashboard/matches">Back to job matches</Link>
                 </Button>
-              </div>
             </div>
-          </RevealOnScroll>
+        );
+    }
 
-          {showFilters && (
-            <RevealOnScroll>
-              <div className="bg-muted/30 rounded-lg p-4 space-y-4">
+    return (
+        <>
+            <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-medium">Filters</h3>
-                  <Button variant="ghost" size="sm" onClick={() => setFilters([])}>
-                    Clear all
-                  </Button>
+                    <Button variant="ghost" size="sm" asChild className="gap-1">
+                        <Link href="/dashboard/matches">
+                            <ArrowLeft className="h-4 w-4" /> Back to matches
+                        </Link>
+                    </Button>
                 </div>
-                <div className="space-y-3">
-                  <div>
-                    <h4 className="text-sm font-medium mb-2">Location</h4>
-                    <div className="flex flex-wrap gap-2">
-                      <FilterButton
-                        filter="Remote"
-                        isActive={filters.includes("Remote")}
-                        toggleFilter={() => toggleFilter("Remote")}
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium mb-2">Match</h4>
-                    <div className="flex flex-wrap gap-2">
-                      <FilterButton
-                        filter="High Match (80%+)"
-                        isActive={filters.includes("High Match")}
-                        toggleFilter={() => toggleFilter("High Match")}
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium mb-2">Skills</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {[
-                        "React",
-                        "TypeScript",
-                        "Node.js",
-                        "Python",
-                        "UI/UX",
-                        "AWS",
-                      ].map((skill) => (
-                        <FilterButton
-                          key={skill}
-                          filter={skill}
-                          isActive={filters.includes(skill)}
-                          toggleFilter={() => toggleFilter(skill)}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </RevealOnScroll>
-          )}
 
-          {filters.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {filters.map((filter) => (
-                <Badge
-                  key={filter}
-                  variant="secondary"
-                  className="flex items-center gap-1 py-1.5 pr-1 pl-3"
-                >
-                  {filter}
-                  <button
-                    onClick={() => toggleFilter(filter)}
-                    className="ml-1 rounded-full hover:bg-muted p-0.5 transition-colors"
-                  >
-                    <X className="h-3 w-3" />
-                    <span className="sr-only">Remove {filter}</span>
-                  </button>
-                </Badge>
-              ))}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="lg:col-span-2 space-y-6">
+                        <RevealOnScroll>
+                            <Card>
+                                <CardContent className="p-6">
+                                    <div className="flex flex-col md:flex-row md:items-start gap-4">
+                                        <div className="flex-1">
+                                            <h1 className="text-2xl font-bold">{job.title}</h1>
+                                            <div className="flex flex-wrap items-center gap-2 mt-1 text-muted-foreground">
+                                                <span className="flex items-center gap-1">
+                                                    <Building className="h-4 w-4" /> {job.company}
+                                                </span>
+                                                <span className="flex items-center gap-1">
+                                                    <MapPin className="h-4 w-4" /> {job.location}
+                                                </span>
+                                                <Badge variant="outline" className="ml-1">
+                                                    {job.locationType}
+                                                </Badge>
+                                            </div>
+                                            <div className="flex flex-wrap items-center gap-4 mt-4">
+                                                <div className="flex items-center gap-1 text-sm">
+                                                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                                                    <span>Posted {job.postedDate}</span>
+                                                </div>
+                                                <div className="flex items-center gap-1 text-sm">
+                                                    <Clock className="h-4 w-4 text-muted-foreground" />
+                                                    <span>Apply within {job.applicationDeadline}</span>
+                                                </div>
+                                                <div className="flex items-center gap-1 text-sm">
+                                                    <Briefcase className="h-4 w-4 text-muted-foreground" />
+                                                    <span>{job.jobType}</span>
+                                                </div>
+                                                {job.salary !== "Competitive" && (
+                                                    <div className="flex items-center gap-1 text-sm">
+                                                        <DollarSign className="h-4 w-4 text-muted-foreground" />
+                                                        <span>{job.salary}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div className="md:self-center">
+                                            <MatchPercentage percentage={job.matchPercentage} size="lg" />
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-wrap gap-2 mt-6">
+                                        {job.skills.map((skill) => (
+                                            <SkillMatch key={skill.name} name={skill.name} match={skill.match} />
+                                        ))}
+                                    </div>
+
+                                    <div className="mt-6">
+                                        <AnimatedButton onClick={handleApply} className="w-full sm:w-auto">
+                                            Apply Now <ExternalLink className="ml-1 h-4 w-4" />
+                                        </AnimatedButton>
+                                        {showApplySuccess && <p className="text-green-600 text-sm mt-2">Application submitted successfully!</p>}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </RevealOnScroll>
+
+                        <RevealOnScroll delay={100}>
+                            <Card>
+                                <CardContent className="p-6">
+                                    <h2 className="text-xl font-semibold mb-4">Job Description</h2>
+                                    <div className="prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: job.description }} />
+                                </CardContent>
+                            </Card>
+                        </RevealOnScroll>
+                    </div>
+
+                    <div className="space-y-6">
+                        <RevealOnScroll delay={200}>
+                            <Card>
+                                <CardContent className="p-6">
+                                    <h2 className="text-lg font-semibold mb-4">About {job.company}</h2>
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div>
+                                            <h3 className="font-medium">{job.company}</h3>
+                                        </div>
+                                    </div>
+                                    <p className="text-sm text-muted-foreground mb-4">{job.companyDescription}</p>
+                                    <div className="space-y-2 text-sm">
+                                        <div className="flex justify-between">
+                                            <span className="text-muted-foreground">Industry</span>
+                                            <span>{job.companyIndustry}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-muted-foreground">Company size</span>
+                                            <span>{job.companySize}</span>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </RevealOnScroll>
+
+                        <RevealOnScroll delay={300}>
+                            <Card>
+                                <CardContent className="p-6">
+                                    <h2 className="text-lg font-semibold mb-4">Match Analysis</h2>
+                                    <div className="flex justify-center mb-4">
+                                        <MatchPercentage percentage={job.matchPercentage} size="lg" animated={false} />
+                                    </div>
+                                    <p className="text-sm text-center mb-4">
+                                        Your profile matches <span className="font-semibold">{job.matchPercentage}%</span> of the requirements for this job.
+                                    </p>
+
+                                    {job.matchReason && (
+                                        <>
+                                            <Separator className="my-4" />
+                                            <div className="space-y-3">
+                                                <h3 className="text-sm font-medium">Why you&apos;re a good match</h3>
+                                                <p className="text-sm text-muted-foreground">{job.matchReason}</p>
+                                            </div>
+                                        </>
+                                    )}
+
+                                    <Separator className="my-4" />
+                                    <div className="space-y-3">
+                                        <h3 className="text-sm font-medium">Skills Match</h3>
+                                        <div className="space-y-2">
+                                            {job.skills.map((skill) => (
+                                                <div key={skill.name} className="flex justify-between items-center">
+                                                    <span className="text-sm">{skill.name}</span>
+                                                    {skill.match ? <Badge className="bg-green-500 hover:bg-green-600">Match</Badge> : <Badge variant="outline">Missing</Badge>}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </RevealOnScroll>
+                    </div>
+                </div>
+
+                {similarJobs.length > 0 && (
+                    <RevealOnScroll delay={400}>
+                        <div className="mt-8">
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-xl font-semibold">Similar Jobs</h2>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <StaggeredAppear staggerAmount={150}>
+                                    {similarJobs.map((job) => (
+                                        <div key={job.id}>
+                                            <JobCard job={job} />
+                                        </div>
+                                    ))}
+                                </StaggeredAppear>
+                            </div>
+                        </div>
+                    </RevealOnScroll>
+                )}
             </div>
-          )}
+
+            <ChatBot
+                jobTitle={job.title}
+                jobDescription={job.description}
+                companyName={job.company}
+                jobId={jobId}
+                initialSuggestedQuestions={[
+                    { id: "1", text: "What skills are required for this job?" },
+                    { id: "2", text: `What experience is needed for the ${job.title} role?` },
+                    { id: "3", text: `Is this a ${job.locationType} position?` },
+                    { id: "4", text: "What are the main responsibilities?" },
+                ]}
+            />
         </>
-      )}
-
-      {/* Job results or empty states */}
-      {filteredJobs.length > 0 ? (
-        <StaggeredAppear
-          className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
-          staggerAmount={150}
-        >
-          {filteredJobs.map((job) => (
-            <div key={job.id}>
-              <JobCard job={job} />
-            </div>
-          ))}
-        </StaggeredAppear>
-      ) : hasNoJobsFromAPI ? (
-        <div className="text-center py-16 bg-muted/30 rounded-lg">
-          <div className="flex justify-center mb-4">
-            <Briefcase className="h-16 w-16 text-muted-foreground/50" />
-          </div>
-          <h3 className="text-xl font-medium mb-2">No Job Recommendations Yet</h3>
-
-          <div className="space-y-3">
-            <Button 
-              variant="default"
-              onClick={() => window.location.href = '/dashboard/upload'}
-            >
-              Update Your CV
-            </Button>
-            
-          </div>
-        </div>
-      ) : hasJobsButFiltered ? (
-        <div className="text-center py-12 bg-muted/30 rounded-lg">
-          <h3 className="text-lg font-medium mb-2">No matching jobs found</h3>
-          <p className="text-muted-foreground mb-4">
-            Try adjusting your search or filters to see more results
-          </p>
-          <Button
-            variant="outline"
-            onClick={() => {
-              setSearchQuery("");
-              setFilters([]);
-            }}
-          >
-            Clear all filters
-          </Button>
-        </div>
-      ) : null}
-    </div>
-  );
+    );
 }
