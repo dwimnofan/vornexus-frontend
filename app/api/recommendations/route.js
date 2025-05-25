@@ -15,7 +15,6 @@ export async function GET(request) {
       );
     }
 
-    console.log('API_URL environment variable:', process.env.API_URL);
     
     let apiUrl = process.env.API_URL + '/api/matching/recommendations';
     
@@ -30,7 +29,6 @@ export async function GET(request) {
       apiUrl += `?limit=${parsedLimit}`;
     }
 
-    console.log('Fetching from URL:', apiUrl);
 
     const headers = {
       'Content-Type': 'application/json',
@@ -40,15 +38,12 @@ export async function GET(request) {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    console.log('Request headers:', headers);
 
     const backendResponse = await fetch(apiUrl, {
       method: 'GET',
       headers,
     });
 
-    console.log('Backend response status:', backendResponse.status);
-    console.log('Backend response status text:', backendResponse.statusText);
 
     if (!backendResponse.ok) {
       let errorMessage = 'Failed to fetch recommendations';
@@ -57,16 +52,13 @@ export async function GET(request) {
       try {
         errorData = await backendResponse.json();
         errorMessage = errorData.message || errorMessage;
-        console.log('Error data from backend:', errorData);
       } catch (e) {
         errorMessage = backendResponse.statusText || errorMessage;
-        console.log('Error parsing backend response:', e.message);
       }
       
       if (backendResponse.status === 404 && errorData && 
           (errorData.message?.toLowerCase().includes('no job recommendations') || 
            errorData.message?.toLowerCase().includes('no recommendations'))) {
-        console.log('No recommendations available for user, returning empty result');
         return NextResponse.json(
           { 
             message: errorData.message || 'No job recommendations available',
@@ -84,10 +76,8 @@ export async function GET(request) {
     }
 
     const backendData = await backendResponse.json();
-    console.log('Raw backend data:', JSON.stringify(backendData, null, 2));
 
     const transformedData = Array.isArray(backendData) ? backendData.map((item, index) => {
-      console.log(`Transforming job ${index}:`, item);
       
       const job = item.job;
       
@@ -111,7 +101,6 @@ export async function GET(request) {
         matchReason: item.reason || ''
       };
       
-      console.log(`Transformed job ${index}:`, transformed);
       return transformed;
     }) : [];
 

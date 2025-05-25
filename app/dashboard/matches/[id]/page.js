@@ -11,11 +11,7 @@ import {
   Clock,
   Briefcase,
   DollarSign,
-  Share2,
-  Bookmark,
   ExternalLink,
-  ChevronRight,
-  ChevronLeft,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -28,11 +24,11 @@ import { StaggeredAppear } from "@/components/staggered-appear"
 import { SkillMatch } from "@/components/skill-match"
 import { JobCard } from "@/components/job-card"
 import { ChatBot } from "@/components/chat/chat-bot"
-import Image from "next/image"
 
 export default function JobDetailPage(props) {
   const params = use(props.params);
   const router = useRouter()
+  const jobId = params.id;
   const [job, setJob] = useState(null)
   const [allJobs, setAllJobs] = useState([])
   const [isLoading, setIsLoading] = useState(true)
@@ -58,8 +54,11 @@ export default function JobDetailPage(props) {
         const jobs = result.data || [];
         setAllJobs(jobs);
         
+
+        
         // Find the specific job by ID (using job hash as ID)
         const currentJob = jobs.find(j => j.id === params.id || j.jobHash === params.id);
+        
         
         if (currentJob) {
           // Transform the job data to match the expected format
@@ -353,7 +352,7 @@ export default function JobDetailPage(props) {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold">Similar Jobs</h2>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-3 gap-6">
                 <StaggeredAppear staggerAmount={150}>
                   {similarJobs.map((job) => (
                     <div key={job.id}>
@@ -370,6 +369,7 @@ export default function JobDetailPage(props) {
       <ChatBot
         jobTitle={job.title}
         jobDescription={job.description}
+        jobId={jobId}
         companyName={job.company}
         initialSuggestedQuestions={[
           { id: "1", text: "What skills are required for this job?" },

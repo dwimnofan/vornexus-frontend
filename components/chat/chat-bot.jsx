@@ -49,7 +49,7 @@ export function ChatBot({ jobTitle, jobDescription, companyName, initialSuggeste
         if (!isOpen) return;
 
         const ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
-        const socket = new WebSocket(`${ws_scheme}://localhost:8000/ws/chat/${job_id}/`);
+        const socket = new WebSocket(`${ws_scheme}://103.74.5.72:8000/ws/chat/${job_id}/`);
         wsRef.current = socket;
 
         socket.onopen = () => {
