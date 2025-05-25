@@ -319,7 +319,7 @@ export default function JobDetailPage(props) {
                     <>
                       <Separator className="my-4" />
                       <div className="space-y-3">
-                        <h3 className="text-sm font-medium">Why you're a good match</h3>
+                        <h3 className="text-sm font-medium">Why you&apos;re a good match</h3>
                         <p className="text-sm text-muted-foreground">{job.matchReason}</p>
                       </div>
                     </>
