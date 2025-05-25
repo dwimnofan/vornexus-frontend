@@ -33,12 +33,15 @@ export default function LoginPage() {
             const result = await login(email, password);
             console.log('Login result:', result);
 
-            setShowSuccessParticles(true);
-
+            // Immediate redirect instead of waiting
+            console.log('Redirecting to dashboard...');
+            setIsLoading(false); // Reset loading state
+            router.push("/dashboard");
+            
+            // Fallback redirect in case router.push doesn't work
             setTimeout(() => {
-                console.log('Redirecting to dashboard...');
-                router.push("/dashboard");
-            }, 1000);
+                window.location.href = "/dashboard";
+            }, 500);
 
         } catch (err) {
             console.error('Login error:', err);
